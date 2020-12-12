@@ -12,30 +12,49 @@
 PWD:=$(shell pwd)
 
 
-all:
+all: clean
 
-	mkdir --parents $(PWD)/build
+	mkdir 	--parents $(PWD)/build/Boilerplate.AppDir/tagspaces
+	apprepo --destination=$(PWD)/build appdir boilerplate libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 libffi7
+	echo '' 																		>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '' 																		>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo 'LD_LIBRARY_PATH=$${LD_LIBRARY_PATH}:$${APPDIR}/tagspaces' 				>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo 'export LD_LIBRARY_PATH=$${LD_LIBRARY_PATH}' 								>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '' 																		>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '' 																		>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo 'UUC_VALUE=`cat /proc/sys/kernel/unprivileged_userns_clone 2> /dev/null`' 	>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo ''										 									>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '' 																		>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '' 																		>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo 'if [ -z "$${UUC_VALUE}" ]' 												>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '    then' 																>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '        exec $${APPDIR}/tagspaces/tagspaces --no-sandbox "$${@}"' 		>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '    else' 																>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '        exec $${APPDIR}/tagspaces/tagspaces "$${@}"' 						>> $(PWD)/build/Boilerplate.AppDir/AppRun
+	echo '    fi' 																	>> $(PWD)/build/Boilerplate.AppDir/AppRun
 
-	wget --output-document=$(PWD)/build/TagSpaces.AppImage https://www.tagspaces.org/downloads/tagspaces-linux64.AppImage
+	wget --output-document=$(PWD)/build/TagSpaces.AppImage "https://www.tagspaces.org/downloads/tagspaces-linux64.AppImage"
 	chmod +x $(PWD)/build/TagSpaces.AppImage
 	cd $(PWD)/build && $(PWD)/build/TagSpaces.AppImage --appimage-extract
 	
-	wget --output-document=$(PWD)/build/build.rpm http://mirror.centos.org/centos/8/AppStream/x86_64/os/Packages/gtk3-3.22.30-5.el8.x86_64.rpm
-	cd $(PWD)/build && rpm2cpio $(PWD)/build/build.rpm | cpio -idmv && cd ..
+	cp --force --recursive 	$(PWD)/build/squashfs-root/usr/share/* 		$(PWD)/build/Boilerplate.AppDir/share
+	cp --force --recursive 	$(PWD)/build/squashfs-root/usr/lib/* 		$(PWD)/build/Boilerplate.AppDir/lib64	
+	cp --force --recursive 	$(PWD)/build/squashfs-root/* 				$(PWD)/build/Boilerplate.AppDir/tagspaces
 
-	wget --output-document=$(PWD)/build/build.rpm https://ftp.lysator.liu.se/pub/opensuse/distribution/leap/15.2/repo/oss/x86_64/libatk-1_0-0-2.34.1-lp152.1.7.x86_64.rpm
-	cd $(PWD)/build && rpm2cpio $(PWD)/build/build.rpm | cpio -idmv && cd ..
+	rm -rf $(PWD)/build/Boilerplate.AppDir/tagspaces/usr
+	rm -rf $(PWD)/build/Boilerplate.AppDir/tagspaces/AppRun 		| true	
+	rm -rf $(PWD)/build/Boilerplate.AppDir/tagspaces/*.desktop 		| true	
+	rm -rf $(PWD)/build/Boilerplate.AppDir/tagspaces/*.svg 			| true	
+	rm -rf $(PWD)/build/Boilerplate.AppDir/tagspaces/*.png 			| true		
+	rm -rf $(PWD)/build/Boilerplate.AppDir/*.desktop 				| true
+	rm -rf $(PWD)/build/Boilerplate.AppDir/*.svg 					| true
+	rm -rf $(PWD)/build/Boilerplate.AppDir/*.png 					| true
 
-	wget --output-document=$(PWD)/build/build.rpm https://ftp.lysator.liu.se/pub/opensuse/distribution/leap/15.2/repo/oss/x86_64/libatk-bridge-2_0-0-2.34.1-lp152.1.5.x86_64.rpm
-	cd $(PWD)/build && rpm2cpio $(PWD)/build/build.rpm | cpio -idmv && cd ..
+	cp --force --recursive $(PWD)/AppDir/*.desktop 	$(PWD)/build/Boilerplate.AppDir 	| true
+	cp --force --recursive $(PWD)/AppDir/*.svg 		$(PWD)/build/Boilerplate.AppDir 	| true
+	cp --force --recursive $(PWD)/AppDir/*.png 		$(PWD)/build/Boilerplate.AppDir 	| true
 
-	wget --output-document=$(PWD)/build/build.rpm https://ftp.lysator.liu.se/pub/opensuse/distribution/leap/15.2/repo/oss/x86_64/libatspi0-2.34.0-lp152.2.4.x86_64.rpm
-	cd $(PWD)/build && rpm2cpio $(PWD)/build/build.rpm | cpio -idmv && cd ..
-
-	cp --force --recursive $(PWD)/build/usr/lib64/* $(PWD)/build/squashfs-root/usr/lib/
-	cp --force --recursive $(PWD)/build/usr/share/* $(PWD)/build/squashfs-root/usr/share/
-
-	export ARCH=x86_64 && $(PWD)/bin/appimagetool.AppImage $(PWD)/build/squashfs-root/ $(PWD)/TagSpaces.AppImage
+	export ARCH=x86_64 && $(PWD)/bin/appimagetool.AppImage $(PWD)/build/Boilerplate.AppDir $(PWD)/TagSpaces.AppImage
 	chmod +x $(PWD)/TagSpaces.AppImage
 
 clean:
