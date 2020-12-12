@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=TagSpaces
+Exec=AppRun
+Terminal=false
+Type=Application
+Icon=tagspaces
+StartupWMClass=TagSpaces
+X-AppImage-Version=3.7.8
+Comment=Offline file organizer and browser with tagging support.
+Categories=Office;
